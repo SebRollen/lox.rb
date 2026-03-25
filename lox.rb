@@ -4,6 +4,8 @@
 require 'debug'
 require_relative 'token'
 require_relative 'scanner'
+require_relative 'expr'
+require_relative 'ast_printer'
 
 module Lox
   @had_error = false
