@@ -1,8 +1,4 @@
 class Expr
-  def accept(visitor)
-    visitor.visit(self)
-  end
-
   class Binary < Expr
     attr_accessor :left, :operator, :right
 
@@ -11,6 +7,10 @@ class Expr
       @left = left
       @operator = operator
       @right = right
+    end
+
+    def accept(visitor)
+      visitor.visit_binary_expr(self)
     end
   end
 
@@ -21,6 +21,10 @@ class Expr
       super()
       @expression = expression
     end
+
+    def accept(visitor)
+      visitor.visit_grouping_expr(self)
+    end
   end
 
   class Literal < Expr
@@ -29,6 +33,10 @@ class Expr
     def initialize(value)
       super()
       @value = value
+    end
+
+    def accept(visitor)
+      visitor.visit_literal_expr(self)
     end
   end
 
@@ -39,6 +47,10 @@ class Expr
       super()
       @operator = operator
       @right = right
+    end
+
+    def accept(visitor)
+      visitor.visit_unary_expr(self)
     end
   end
 end

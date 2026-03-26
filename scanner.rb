@@ -40,6 +40,8 @@ class Scanner
     tokens
   end
 
+  private
+
   def at_end?
     current >= source.length
   end
