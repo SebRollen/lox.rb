@@ -8,16 +8,71 @@ class Parser
   end
 
   def parse
-    expression
-  rescue ParseError
-    nil
+    statements = []
+    statements.append(declaration) until at_end?
+
+    statements
   end
 
   private
 
-  # expression     → equality
+  # expression     → assignment
   def expression
-    equality
+    assignment
+  end
+
+  def declaration
+    return var_declaration if match(TokenType::VAR)
+
+    statement
+  rescue ParseError
+    synchronize
+    nil
+  end
+
+  def statement
+    return print_statement if match(TokenType::PRINT)
+
+    expression_statement
+  end
+
+  def print_statement
+    value = expression
+    consume(TokenType::SEMICOLON, "Expect ';' after value.")
+    Stmt::Print.new(value)
+  end
+
+  def var_declaration
+    name = consume(TokenType::IDENTIFIER, 'Expect variable name.')
+
+    initializer = nil
+    initializer = expression if match(TokenType::EQUAL)
+    consume(TokenType::SEMICOLON, "Expect ';' after variable declaration.")
+    Stmt::Var.new(name, initializer)
+  end
+
+  def expression_statement
+    value = expression
+    consume(TokenType::SEMICOLON, "Expect ';' after value.")
+    Stmt::Expression.new(value)
+  end
+
+  def assignment
+    expr = equality
+
+    if match(TokenType::EQUAL)
+      equals = previous
+      value = assignment
+
+      if expr.is_a?(Expr::Variable)
+        name = expr.name
+        return Expr::Assign.new(name, value)
+      end
+
+      error(equals, 'Invalid assignment target.')
+    end
+
+    expr
   end
 
   # equality       → comparison ( ( "!=" | "==" ) comparison )* ;
@@ -87,8 +142,8 @@ class Parser
     return Expr::Literal.new(false) if match(TokenType::FALSE)
     return Expr::Literal.new(true) if match(TokenType::TRUE)
     return Expr::Literal.new(nil) if match(TokenType::NIL)
-
     return Expr::Literal.new(previous.literal) if match(TokenType::NUMBER, TokenType::STRING)
+    return Expr::Variable.new(previous) if match(TokenType::IDENTIFIER)
 
     if match(TokenType::LEFT_PAREN)
       expr = expression

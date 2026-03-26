@@ -6,8 +6,10 @@ require_relative 'runtime_error'
 require_relative 'token'
 require_relative 'scanner'
 require_relative 'parser'
+require_relative 'environment'
 require_relative 'interpreter'
 require_relative 'expr'
+require_relative 'stmt'
 require_relative 'ast_printer'
 
 module Lox
@@ -40,11 +42,11 @@ module Lox
     scanner = Scanner.new(source)
     tokens = scanner.scan_tokens
     parser = Parser.new(tokens)
-    expression = parser.parse
+    statements = parser.parse
 
     return if @had_error
 
-    puts @interpreter.interpret(expression)
+    @interpreter.interpret(statements)
   end
 
   def self.error(line, message)

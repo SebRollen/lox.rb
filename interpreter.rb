@@ -1,7 +1,14 @@
 class Interpreter
-  def interpret(expression)
-    value = evaluate(expression)
-    puts stringify(value)
+  attr_accessor :environment
+
+  def initialize
+    @environment = Environment.new
+  end
+
+  def interpret(statements)
+    statements.each do |statement|
+      execute(statement)
+    end
   rescue RuntimeError => e
     Lox.runtime_error(e)
   end
@@ -67,8 +74,41 @@ class Interpreter
     end
   end
 
+  def visit_variable_expr(expr)
+    environment.get(expr.name)
+  end
+
   def evaluate(expr)
     expr.accept(self)
+  end
+
+  def execute(stmt)
+    stmt.accept(self)
+  end
+
+  def visit_expression_stmt(stmt)
+    evaluate(stmt.expression)
+    nil
+  end
+
+  def visit_print_stmt(stmt)
+    value = evaluate(stmt.expression)
+    puts stringify(value)
+    nil
+  end
+
+  def visit_var_statement(stmt)
+    value = nil
+    value = evaluate(stmt.initializer) unless stmt.initializer.nil?
+
+    environment.define(stmt.name.lexeme, value)
+    nil
+  end
+
+  def visit_assign_expr(expr)
+    value = evaluate(expr.value)
+    environment.assign(expr.name, value)
+    value
   end
 
   def check_number_operand(operator, operand)

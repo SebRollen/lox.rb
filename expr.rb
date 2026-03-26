@@ -1,4 +1,18 @@
 class Expr
+  class Assign < Expr
+    attr_accessor :name, :value
+
+    def initialize(name, value)
+      super()
+      @name = name
+      @value = value
+    end
+
+    def accept(visitor)
+      visitor.visit_assign_expr(self)
+    end
+  end
+
   class Binary < Expr
     attr_accessor :left, :operator, :right
 
@@ -51,6 +65,19 @@ class Expr
 
     def accept(visitor)
       visitor.visit_unary_expr(self)
+    end
+  end
+
+  class Variable < Expr
+    attr_accessor :name
+
+    def initialize(name)
+      super()
+      @name = name
+    end
+
+    def accept(visitor)
+      visitor.visit_variable_expr(self)
     end
   end
 end
