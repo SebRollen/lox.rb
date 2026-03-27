@@ -32,6 +32,7 @@ class Parser
 
   def statement
     return print_statement if match(TokenType::PRINT)
+    return Stmt::Block.new(block) if match(TokenType::LEFT_BRACE)
 
     expression_statement
   end
@@ -55,6 +56,15 @@ class Parser
     value = expression
     consume(TokenType::SEMICOLON, "Expect ';' after value.")
     Stmt::Expression.new(value)
+  end
+
+  def block
+    statements = []
+
+    statements.append(declaration) until check(TokenType::RIGHT_BRACE) || at_end?
+
+    consume(TokenType::RIGHT_BRACE, "Expect '}' after block.")
+    statements
   end
 
   def assignment

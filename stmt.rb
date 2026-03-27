@@ -1,6 +1,19 @@
 # frozen_string_literal: true
 
 class Stmt
+  class Block < Stmt
+    attr_accessor :statements
+
+    def initialize(statements)
+      super()
+      @statements = statements
+    end
+
+    def accept(visitor)
+      visitor.visit_block_stmt(self)
+    end
+  end
+
   class Expression < Stmt
     attr_accessor :expression
 
